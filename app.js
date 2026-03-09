@@ -251,6 +251,11 @@ function handleCredentialResponse(response) {
             picture: responsePayload.picture
         };
 
+        const rememberMeCheck = document.getElementById('remember-me');
+        if (rememberMeCheck && rememberMeCheck.checked) {
+            localStorage.setItem('proTrackUser', JSON.stringify(currentState.currentUser));
+        }
+
         // Hide Login, Show App
         document.getElementById('login-overlay').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
@@ -268,6 +273,21 @@ function handleCredentialResponse(response) {
 window.onload = function () {
     // Global Search feature
     setupSearch();
+
+    // Check for "Remember Me" session
+    const savedUser = localStorage.getItem('proTrackUser');
+    if (savedUser) {
+        try {
+            currentState.currentUser = JSON.parse(savedUser);
+            document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            initApp();
+            return; // Skip Google Identity Services prompt
+        } catch (e) {
+            console.error("Invalid saved user", e);
+            localStorage.removeItem('proTrackUser');
+        }
+    }
 
     // Initialize Google Identity Services for Login (using standard client ID for demo purposes)
     google.accounts.id.initialize({
@@ -1033,8 +1053,18 @@ function renderVideosView() {
                     </div>
                     <h4 class="card-title" style="margin-bottom: 8px;">${v.title}</h4>
                     <textarea class="video-notes-input" data-videoid="${v.id}" placeholder="Add notes or changes here..." rows="2" style="width: 100%; border: none; background: transparent; color: var(--text-secondary); font-size: 0.85rem; resize: vertical; margin-bottom: 8px; font-family: inherit; border-bottom: 1px dashed var(--border-subtle); padding-bottom: 4px;">${v.notes || ''}</textarea>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 8px; margin-top:auto;">
-                        ${linkHtml}
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 8px; margin-top:auto;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            ${linkHtml}
+                        </div>
+                        <div class="card-actions">
+                            <button class="status-toggle-video-btn btn-video-prev" data-videoid="${v.id}" title="Previous Stage" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer;">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <button class="status-toggle-video-btn btn-video-next" data-videoid="${v.id}" title="Next Stage" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer;">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1051,6 +1081,21 @@ function renderVideosView() {
 
     // Attach listeners
     setupVideoDragAndDrop();
+
+    // Arrow button listeners
+    document.querySelectorAll('.btn-video-next').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            changeVideoStatusDirection(btn.getAttribute('data-videoid'), 1);
+        });
+    });
+
+    document.querySelectorAll('.btn-video-prev').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            changeVideoStatusDirection(btn.getAttribute('data-videoid'), -1);
+        });
+    });
 
     // Notes auto-save listener
     document.querySelectorAll('.video-notes-input').forEach(input => {
@@ -1111,6 +1156,19 @@ function renderVideosView() {
 
 
 
+
+function changeVideoStatusDirection(videoId, direction) {
+    const video = projectData.videos.find(v => v.id === videoId);
+    if (!video) return;
+
+    const flow = ['pre-production', 'production', 'post-production', 'completed'];
+    let currentIndex = flow.indexOf(video.status);
+    let newIndex = currentIndex + direction;
+
+    if (newIndex >= 0 && newIndex < flow.length) {
+        updateVideoStatus(videoId, flow[newIndex]);
+    }
+}
 
 function updateVideoStatus(videoId, newStatus) {
     const video = projectData.videos.find(v => v.id === videoId);
@@ -1445,6 +1503,19 @@ function setupEventListeners() {
     if (connectCalendarBtn) {
         connectCalendarBtn.addEventListener('click', () => {
             if (typeof handleAuthClick === 'function') handleAuthClick();
+        });
+    }
+
+    // Logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('proTrackUser');
+            // If using google one tap, prompt them gracefully again
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            location.reload();
         });
     }
 
