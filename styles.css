@@ -1075,6 +1075,208 @@ body.theme-videos {
 }
 
 /* ---------------------------------------------------
+   DASHBOARD PIPELINE STAGING STYLES (app.js)
+--------------------------------------------------- */
+.dashboard-pipeline-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.pipeline-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
+.pipeline-title {
+  margin-bottom: 6px;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.pipeline-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.pipeline-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Phase 1 Interactive Card */
+.phase-interactive {
+  border-left: 4px solid #f59e0b;
+  border-top: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  margin: 0;
+  background: var(--bg-primary);
+}
+
+.phase-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.phase-card-info {
+  flex: 1;
+}
+
+.phase1-badge {
+  color: #f59e0b;
+  background: #f59e0b22;
+  display: inline-flex;
+  margin-bottom: 10px;
+}
+
+.phase-description {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0;
+}
+
+.phase-progress-container {
+  margin-bottom: 15px;
+}
+
+.phase-progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.phase-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.phase-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.phase1-fill {
+  background: #f59e0b;
+}
+
+.phase1-text {
+  color: #f59e0b;
+}
+
+.phase-card-footer {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
+  font-weight: 500;
+}
+
+.phase-card-footer i {
+  margin-right: 4px;
+}
+
+/* Phase 2 & 3 Automated Stage Cards */
+.phase-stage-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-right: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.phase2-border {
+  border-left: 4px solid #3b82f6;
+}
+
+.phase3-border {
+  border-left: 4px solid #10b981;
+}
+
+.stage-info {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.stage-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.phase2-icon {
+  background: #3b82f615;
+  color: #3b82f6;
+}
+
+.phase3-icon {
+  background: #10b98115;
+  color: #10b981;
+}
+
+.stage-number {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.phase2-text {
+  color: #3b82f6;
+}
+
+.phase3-text {
+  color: #10b981;
+}
+
+.stage-title {
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-family: var(--font-display);
+  margin-bottom: 2px;
+}
+
+.stage-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0;
+}
+
+.stage-status {
+  text-align: right;
+}
+
+/* ---------------------------------------------------
    SEARCH DROPDOWN UI
 --------------------------------------------------- */
 .search-dropdown {
@@ -1270,6 +1472,49 @@ body.theme-videos {
 
   .phase-card {
     padding: 15px;
+  }
+
+  /* Pipeline Dashboard Refactoring overides */
+  .pipeline-header {
+    padding: 15px;
+  }
+
+  .pipeline-body {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .phase-card-top {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .phase-card-top .status-badge {
+    align-self: flex-start;
+  }
+
+  .phase-stage-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .stage-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .stage-status {
+    text-align: left;
+    width: 100%;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 12px;
+  }
+
+  .stage-status .status-badge {
+    display: inline-block;
   }
 
   /* Timeline Visual */
