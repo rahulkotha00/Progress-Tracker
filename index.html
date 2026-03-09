@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Tracker | Production Workspace</title>
+    <meta name="description"
+        content="A modern, dynamic web application to track video production phases from pre-production to feedback.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google API & Identity Services -->
+    <script async defer src="https://apis.google.com/js/api.js"></script>
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+</head>
+
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <img src="/Assets/bagana vector white.png" alt="Begaana Pictures" class="login-logo">
+            <h2>Welcome to ProTrack</h2>
+            <p>Please sign in with an authorized Google account to access this workspace.</p>
+            <div id="google-login-button-container"></div>
+            <div id="login-error" class="login-error-msg hidden">Account not authorized.</div>
+        </div>
+    </div>
+
+    <div id="app" class="app-container hidden">
+        <!-- Sidebar Navigation -->
+        <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="/Assets/bagana vector white.png" alt="Begaana Pictures" style="max-height: 40px;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 5px;">For
+                        Nested Brands</div>
+                </div>
+            </div>
+            <ul class="nav-links" id="nav-links">
+                <!-- Navigation links will be injected here -->
+            </ul>
+            <div class="sidebar-footer">
+                <div class="progress-overview">
+                    <span class="progress-label">Overall Progress</span>
+                    <span class="progress-value" id="overall-progress-text">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="overall-progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-titles" style="display: flex; align-items: center; gap: 15px;">
+                    <button id="mobile-menu-btn" class="mobile-menu-btn hidden" aria-label="Toggle Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1 id="page-title">Dashboard</h1>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <p id="page-subtitle" class="text-muted" style="margin: 0; margin-top: 2px;">Overview of your
+                                production pipeline</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+                    <div class="search-container" style="position: relative;">
+                        <i class="fa-solid fa-search"
+                            style="position: absolute; left: 12px; top: 12px; color: var(--text-muted);"></i>
+                        <input type="text" id="global-search" class="form-control" placeholder="Search tasks, videos..."
+                            style="padding-left: 35px; width: 250px;">
+                        <ul id="search-dropdown" class="search-dropdown hidden"></ul>
+                    </div>
+                    <button class="btn btn-outline" id="refresh-week" title="New Week (Reset Progress)">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <button class="btn btn-outline" id="schedule-meetings"
+                        title="Schedule Weekly Meetings (Google Calendar)">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                    </button>
+                    <button class="btn btn-outline" id="connect-calendar" title="Connect Google Calendar">
+                        <i class="fa-brands fa-google"></i>
+                    </button>
+                    <div class="user-profile">
+                        <img src="https://ui-avatars.com/api/?name=User&background=333&color=fff" alt="User Avatar">
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body" id="content-body">
+                <!-- Dynamic Content Will Be Injected Here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals & Overlays -->
+    <div id="modal-container" class="modal-overlay hidden">
+        <div class="modal">
+            <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-content" id="modal-content">
+                <!-- Fallback content, overridden by JS -->
+            </div>
+
+            <!-- Custom Card Form Template -->
+            <div id="custom-card-form" class="hidden">
+                <h2 style="margin-bottom: 20px;">Add Custom Card</h2>
+                <div class="form-group">
+                    <label>Phase</label>
+                    <select id="custom-phase" class="form-control">
+                        <option value="phase1">Pre-production</option>
+                        <option value="phase2">Production</option>
+                        <option value="phase3">Post Production</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="custom-title" class="form-control" placeholder="e.g. Location Scouting"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label>Assignee</label>
+                    <select id="custom-role" class="form-control" required>
+                        <option value="Director">Director</option>
+                        <option value="Videographer">Videographer</option>
+                        <option value="Scriptwriter">Scriptwriter</option>
+                        <option value="Stylist">Stylist</option>
+                        <option value="Project Manager">Project Manager</option>
+                        <option value="Editor">Editor</option>
+                        <option value="Client">Client</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes / Agenda</label>
+                    <textarea id="custom-agenda" class="form-control" rows="3"
+                        placeholder="Brief description..."></textarea>
+                </div>
+                <button type="button" id="submit-custom-card" class="btn btn-primary"
+                    style="margin-top: 10px; width: 100%; padding: 10px;">Add Card</button>
+            </div>
+
+            <!-- Video Form Template -->
+            <div id="video-form" class="hidden">
+                <h2 style="margin-bottom: 20px;">Add Video Title</h2>
+                <div class="form-group">
+                    <label>Video Title</label>
+                    <input type="text" id="video-title" class="form-control" placeholder="e.g. September Product Launch"
+                        required>
+                </div>
+                <input type="hidden" id="video-stage" value="pre-production">
+                <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                    <input type="checkbox" id="video-keep-open">
+                    <label for="video-keep-open" style="margin: 0; font-weight: normal; cursor: pointer;">Keep open to
+                        add more</label>
+                </div>
+                <button type="button" id="submit-video-add" class="btn btn-primary"
+                    style="margin-top: 10px; width: 100%; padding: 10px;">Add Video</button>
+            </div>
+
+
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
