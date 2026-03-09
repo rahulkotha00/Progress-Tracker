@@ -508,7 +508,7 @@ function renderDashboard() {
                         <div class="phase-card-info">
                             <span class="phase-badge phase1-badge"><i class="fa-solid ${p1.icon}"></i> Phase 1</span>
                             <h2 class="phase-title" style="margin-bottom: 4px;">${p1.title}</h2>
-                            <p class="phase-description">Initial conceptualization, scripting, and pre-shoot logistics. Fully interactive manual tracking board.</p>
+                            <p class="phase-description">Initial conceptualization, scripting, and pre-shoot logistics.</p>
                         </div>
                         <span class="status-badge ${p1Total > 0 && p1Completed === p1Total ? 'completed' : 'pending'}">${p1Total === 0 ? 'No sub-phases' : Math.round((p1Completed / p1Total) * 100) + '% Done'}</span>
                     </div>
