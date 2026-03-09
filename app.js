@@ -134,6 +134,7 @@ const emptyProjectData = {
 const firebaseConfig = {
     apiKey: "AIzaSyB6ls1zH6PWEQTExiSjSh65JZHDGh4wTvc",
     authDomain: "protrack-e8f7c.firebaseapp.com",
+    databaseURL: "https://protrack-e8f7c-default-rtdb.firebaseio.com",
     projectId: "protrack-e8f7c",
     storageBucket: "protrack-e8f7c.firebasestorage.app",
     messagingSenderId: "869333988176",
@@ -144,30 +145,44 @@ const database = firebase.database();
 const dbRef = database.ref('proTrackData');
 
 let projectData = JSON.parse(JSON.stringify(emptyProjectData)); // default starting point while loading
+let isLocalSave = false; // Flag to prevent UI flashing on our own saves
 
-// Listen for Realtime Database changes
-dbRef.on('value', (snapshot) => {
+// Load data once on initial startup, then listen for external changes
+dbRef.once('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
         projectData = data;
+        runDataMigrations();
+    } else {
+        // Database is empty - initialize with defaults and save
+        projectData = JSON.parse(JSON.stringify(emptyProjectData));
+        isLocalSave = true;
+        setTimeout(() => { isLocalSave = false; }, 2000);
+        dbRef.set(projectData);
+    }
+}).then(() => {
+    // After initial load, listen for changes from OTHER devices only
+    dbRef.on('value', (snapshot) => {
+        if (isLocalSave) return; // Skip — we triggered this ourselves
 
-        // Execute migrations on incoming data if necessary to ensure schema is correct
+        const data = snapshot.val();
+        if (!data) return;
+
+        projectData = data;
         runDataMigrations();
 
-        // Only re-render if the app is already visible (user logged in)
+        // Only re-render if the user is already logged in and watching the app
         if (currentState.currentUser && !document.getElementById('app').classList.contains('hidden')) {
-            if (currentState.activePhaseId) {
-                navigateToPhase(currentState.activePhaseId);
+            if (currentState.activePhaseId === 'videos') {
+                renderVideosView();
+            } else if (currentState.activePhaseId) {
+                renderPhase(currentState.activePhaseId);
             } else {
                 renderDashboard();
             }
             updateOverallProgress();
         }
-    } else {
-        // Database is empty, initialize it with default template
-        projectData = JSON.parse(JSON.stringify(emptyProjectData));
-        saveData();
-    }
+    });
 });
 
 function runDataMigrations() {
@@ -225,6 +240,13 @@ function runDataMigrations() {
 }
 
 function saveData() {
+    isLocalSave = true; // Set flag right before writing to DB
+
+    // Clear the flag after a short delay, to ensure local 'on(value)' events pass through while true
+    setTimeout(() => {
+        isLocalSave = false;
+    }, 1000);
+
     dbRef.set(projectData).catch((error) => {
         console.error("Firebase sync error:", error);
     });
@@ -311,6 +333,9 @@ window.onload = function () {
             currentState.currentUser = JSON.parse(savedUser);
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
+
+            // Note: Firebase on('value') might have already fired or will fire soon.
+            // initApp() will safely render the current state.
             initApp();
             return; // Skip Google Identity Services prompt
         } catch (e) {
@@ -393,9 +418,10 @@ function renderSidebar() {
     videosHeader.textContent = 'VIDEOS';
     DOM.navLinks.appendChild(videosHeader);
 
+    // The Videos section has only one view, the Video Tracker, so we point Dashboard to it as well.
     const videoDashLi = document.createElement('li');
     videoDashLi.innerHTML = `
-        <a href="#" class="nav-item ${currentState.activePhaseId === 'video-dashboard' ? 'active' : ''}" data-target="video-dashboard">
+        <a href="#" class="nav-item ${currentState.activePhaseId === 'video-dashboard' ? 'active' : ''}" data-target="videos">
             <i class="fa-solid fa-chart-line"></i>
             <span>Dashboard</span>
         </a>
@@ -1253,14 +1279,6 @@ function setupVideoDragAndDrop() {
 
 // Navigation Logic
 function navigateToPhase(phaseId) {
-    currentState.activePhaseId = phaseId;
-    renderSidebar();
-
-    // Trigger animation
-    DOM.contentBody.style.animation = 'none';
-    DOM.contentBody.offsetHeight; // trigger reflow
-    DOM.contentBody.style.animation = 'fadeIn var(--transition-normal)';
-
     // Theme injection specifically for Video Tracker tab
     if (phaseId === 'videos' || phaseId === 'video-dashboard') {
         document.body.classList.add('theme-videos');
@@ -1270,14 +1288,19 @@ function navigateToPhase(phaseId) {
 
     if (phaseId === null || phaseId === 'dashboard') {
         currentState.activePhaseId = null;
+        renderSidebar();
         renderDashboard();
-    } else if (phaseId === 'video-dashboard') {
-        renderVideoDashboard();
-    } else if (phaseId === 'videos') {
+    } else if (phaseId === 'video-dashboard' || phaseId === 'videos') {
+        currentState.activePhaseId = 'videos';
+        renderSidebar();
         renderVideosView();
     } else if (phaseId === 'activity-log') {
+        currentState.activePhaseId = 'activity-log';
+        renderSidebar();
         renderActivityLog();
     } else {
+        currentState.activePhaseId = phaseId;
+        renderSidebar();
         renderPhase(phaseId);
     }
 }
