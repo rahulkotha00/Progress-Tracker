@@ -234,6 +234,7 @@ let currentState = {
 const ALLOWED_EMAILS = [
     'rahulkotha00@gmail.com',
     'kotharahul96@gmail.com',
+    'begaana.rahulkotha@gmail.com',
     'rahul@begaanapictures.com'
 ];
 
@@ -1653,3 +1654,4 @@ async function scheduleWeeklyMeetings() {
     }
     if (createdCount > 0) alert(`Successfully scheduled ${createdCount} calls for this week in Google Calendar!`);
 }
+
